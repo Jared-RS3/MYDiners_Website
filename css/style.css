@@ -1,0 +1,241 @@
+/* ============================================================
+   MY Diners — tokens
+   ------------------------------------------------------------
+   Taken from the material board: cream and stone as the base,
+   blush for accent, oak and black marble for depth. No cool
+   hue appears anywhere in the system — every neutral is warm.
+   ============================================================ */
+:root{
+  /* base */
+  --cream:#F4EBDD;
+  --ivory:#EFE6D8;
+  --marble:#F6EDE4;
+  --wall:#EFE0CD;        /* sampled from the hero plate — the stage safety net */
+
+  /* accent */
+  /* --blush:#E6B7BE;
+  --rose:#D68D98; */
+  --blush: #F6CED6;
+--rose:  #F45B84;
+  --rose-deep:#A85566;   /* white text clears AA on this one */
+  --rose-ink:#8A5A62;    /* accent text on cream */
+
+  /* neutrals */
+  --taupe:#B9A792;
+  --mushroom:#AAA39C;
+  --oak:#D2AE84;
+  --brass:#B88A56;
+  --charcoal:#232224;
+  --marble-black:#1A1A1B;
+
+  /* text */
+  --ink:#3A312C;
+  --ink-soft:#6B5B4F;
+
+  --vh:1vh;              /* JS writes a px value here (stable on mobile) */
+  --vw:1vw;
+
+  /* camera */
+
+  --ease:cubic-bezier(.22,.61,.36,1);
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:auto}
+body{
+  margin:0;
+  font-family:"Poppins",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color:var(--ink);
+  background:var(--wall);
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+img{display:block;max-width:100%}
+a{color:inherit;text-decoration:none}
+
+/* ============================================================
+   Nav
+   ============================================================ */
+.nav{
+  position:fixed;inset:0 0 auto 0;z-index:60;
+  display:flex;align-items:center;justify-content:space-between;
+  gap:2rem;padding:1.5rem clamp(1rem,4vw,3.5rem);
+  transition:background-color .5s var(--ease),box-shadow .5s var(--ease),padding .5s var(--ease);
+}
+.nav.is-stuck{
+  background:rgba(244,235,221,.86);
+  -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
+  box-shadow:0 1px 0 rgba(58,49,44,.08);
+  padding-top:1rem;padding-bottom:1rem;
+}
+.nav__brand{font-weight:800;font-size:clamp(1.05rem,1.6vw,1.35rem);letter-spacing:-.02em}
+.nav__links{display:flex;gap:clamp(1.25rem,2.4vw,2.5rem);font-size:.9rem;font-weight:500}
+.nav__links a{opacity:.85;transition:opacity .3s}
+.nav__links a:hover{opacity:1}
+.nav__burger{
+  display:flex;flex-direction:column;gap:4px;justify-content:center;
+  width:34px;height:28px;padding:0;border:0;background:none;cursor:pointer;
+}
+.nav__burger span{display:block;height:2px;border-radius:2px;background:var(--ink)}
+.nav__burger span:last-child{width:70%}
+@media (max-width:720px){ .nav__links{display:none} }
+@media (min-width:721px){ .nav__burger{display:none} }
+
+/* ============================================================
+   Stage
+   ============================================================ */
+.experience{position:relative;height:760vh}
+.stage{
+  position:sticky;top:0;
+  height:100vh;height:calc(var(--vh) * 100);
+  overflow:hidden;
+  background:var(--wall);
+  isolation:isolate;
+}
+
+.stage__still{display:none}
+
+/* --- the camera move ---------------------------------------------
+   Everything between the nav and the hero copy is one WebGL canvas.
+   ------------------------------------------------------------- */
+.stage__gl{
+  position:absolute;inset:0;
+  width:100%;height:100%;
+  display:block;
+}
+
+/* a touch of light that travels with the move */
+.stage__light{
+  position:absolute;inset:0;z-index:3;pointer-events:none;
+  background:radial-gradient(120% 80% at 50% 108%,rgba(255,245,230,.30),rgba(255,245,230,0) 62%),
+             radial-gradient(90% 70% at 50% -10%,rgba(58,49,44,.10),rgba(58,49,44,0) 60%);
+  opacity:.9;
+}
+
+/* ============================================================
+   Hero copy
+   ============================================================ */
+/* The figure's head sits at 30% of frame height and the table takes
+   him at 94%, so the copy is hung off the top rather than centred:
+   the headline clears his head, and the button lands on his chest
+   where the eye is already going. */
+.hero{
+  position:absolute;inset:0;z-index:20;
+  display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
+  text-align:center;padding:calc(var(--vh) * 10) 1.25rem 0;
+  will-change:transform,opacity;
+}
+.hero__pill{
+  display:inline-flex;align-items:center;gap:.5rem;margin:0 0 1.25rem;
+  padding:.5rem 1rem;border:1px solid rgba(214,141,152,.55);border-radius:999px;
+  font-size:.78rem;font-weight:500;letter-spacing:.02em;color:var(--rose-ink);
+  background:rgba(255,255,255,.35);
+}
+.hero__pill .dot{width:6px;height:6px;border-radius:50%;background:var(--rose)}
+.hero__title{
+  margin:0;font-weight:800;letter-spacing:-.035em;line-height:.9;
+  font-size:clamp(2.8rem,10.5vw,9.5rem);
+}
+/* out to the side of his head, not over it */
+.hero__script{
+  position:absolute;top:calc(var(--vh) * 31);left:50%;
+  margin:0;font-family:"Caveat",cursive;color:var(--rose-deep);
+  font-size:clamp(1.3rem,3.2vw,2.4rem);line-height:1.05;
+  transform:translateX(clamp(6rem,13vw,15rem)) rotate(-7deg);
+  white-space:pre-line;text-align:left;
+}
+.hero__cta{
+  position:absolute;top:calc(var(--vh) * 50);
+  padding:.95rem 1.9rem;border-radius:999px;
+  background:linear-gradient(135deg,var(--blush),var(--rose));
+  color:var(--ink);font-weight:600;font-size:.95rem;
+  box-shadow:0 12px 30px -10px rgba(168,85,102,.45);
+  transition:transform .35s var(--ease),box-shadow .35s var(--ease);
+}
+.hero__cta:hover{transform:translateY(-2px);box-shadow:0 18px 38px -12px rgba(168,85,102,.55)}
+
+/* On a phone the lens crops to the sides, so he fills the frame and
+   there is no room beside his head: the script tucks under the
+   headline instead, and the button sits above the board. */
+@media (max-width:720px){
+  .hero__script{
+    top:calc(var(--vh) * 20);white-space:normal;text-align:center;
+    transform:translateX(-50%) rotate(-5deg);
+  }
+  .hero__cta{top:calc(var(--vh) * 47)}
+}
+
+.cue{
+  position:absolute;left:50%;bottom:2.2rem;z-index:20;
+  transform:translateX(-50%);
+  display:flex;flex-direction:column;align-items:center;gap:.6rem;
+  font-size:.7rem;letter-spacing:.24em;text-transform:uppercase;color:var(--ink-soft);
+  will-change:opacity;
+}
+.cue i{display:block;width:1px;height:38px;background:linear-gradient(var(--ink-soft),transparent)}
+
+/* ============================================================
+   Courses — set down on the same tabletop
+   ============================================================ */
+.courses{position:absolute;inset:0;z-index:30;pointer-events:none}
+.course{
+  position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  gap:clamp(1.5rem,5vw,5rem);padding:0 clamp(1.25rem,6vw,7rem);
+  opacity:0;will-change:transform,opacity;
+}
+.course__plate{
+  flex:0 0 auto;
+  width:clamp(180px,26vw,360px);aspect-ratio:1;border-radius:50%;
+  background:
+    radial-gradient(circle at 38% 32%,#fffdfa,#f3e9de 58%,#e6d7c6 100%);
+  box-shadow:
+    0 2px 2px rgba(92,62,40,.10),
+    0 26px 44px -18px rgba(92,62,40,.42),
+    inset 0 0 0 clamp(8px,1.4vw,18px) rgba(255,255,255,.55),
+    inset 0 0 0 calc(clamp(8px,1.4vw,18px) + 1px) rgba(184,138,86,.55);
+  display:grid;place-items:center;overflow:hidden;
+}
+.course__plate img{width:100%;height:100%;object-fit:contain}
+.course__text{max-width:26rem;text-align:left}
+.course__idx{margin:0 0 .35rem;font-size:.72rem;letter-spacing:.28em;color:var(--rose-ink);font-weight:600}
+.course__text h2{margin:0;font-size:clamp(2.4rem,6.5vw,5rem);font-weight:800;letter-spacing:-.035em;line-height:1}
+.course__desc{margin:.75rem 0 0;font-size:clamp(.92rem,1.3vw,1.05rem);line-height:1.6;color:var(--ink-soft);max-width:22rem}
+@media (max-width:720px){
+  .course{flex-direction:column;justify-content:center;gap:1.75rem}
+  .course__text{text-align:center}
+  .course__desc{margin-inline:auto}
+}
+
+/* ============================================================
+   After
+   ============================================================ */
+.after{
+  min-height:70vh;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:.75rem;padding:8rem 1.5rem;text-align:center;background:var(--cream);
+}
+.after h2{margin:0;font-size:clamp(1.4rem,3vw,2.2rem);font-weight:800;letter-spacing:-.02em}
+.after p{margin:0;max-width:38rem;color:var(--ink-soft);line-height:1.7}
+.after code{background:rgba(58,49,44,.07);padding:.15em .45em;border-radius:5px;font-size:.9em}
+
+/* ============================================================
+   Fallback — no JS, no WebGL, or reduced motion.
+   The first and last frames of the move simply stack; nothing is
+   scrubbed, and nobody is shown a scene that never arrives.
+   ============================================================ */
+.no-motion .experience{height:auto}
+.no-motion .stage{position:relative;height:auto;overflow:visible}
+.no-motion .stage__gl{display:none}
+.no-motion .stage::before,
+.no-motion .stage::after{
+  content:"";display:block;height:100vh;
+  background:var(--wall) center/cover no-repeat;
+}
+.no-motion .stage::before{background-image:url(../assets/frame-start.webp)}
+.no-motion .stage::after{background-image:url(../assets/frame-end.webp)}
+.no-motion .stage__still{display:none}
+.no-motion .hero{position:absolute;top:0;opacity:1;transform:none}
+.no-motion .stage__light,.no-motion .cue{display:none}
+.no-motion .courses{position:relative;inset:auto;pointer-events:auto}
+.no-motion .course{position:relative;inset:auto;opacity:1;min-height:80vh}
+.no-motion .nav{position:sticky}

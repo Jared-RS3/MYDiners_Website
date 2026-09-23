@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MY Diners — Flavour First</title>
+<meta name="description" content="MY Diners, Rosebank &amp; Cape Town. Flavour first — grills, biryanis, curries and platters.">
+<meta name="theme-color" content="#EFE0CD">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=Poppins:wght@400;500;600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+
+<link rel="preload" as="image" href="assets/hero.webp">
+<link rel="preload" as="image" href="assets/hero-table.webp">
+<link rel="preload" as="image" href="assets/bhai.webp">
+<link rel="preload" as="image" href="assets/platter.webp">
+</head>
+<body>
+
+<header class="nav" id="nav">
+  <a class="nav__brand" href="#">MY Diners</a>
+  <nav class="nav__links">
+    <a href="#menu">Menu</a>
+    <a href="#book">Book</a>
+    <a href="#about">About</a>
+    <a href="#contact">Contact</a>
+  </nav>
+  <button class="nav__burger" type="button" aria-label="Open menu"><span></span><span></span><span></span></button>
+</header>
+
+<!-- ============================================================
+     THE CAMERA MOVE
+     A 2.5D reconstruction of the room in the hero plate, with one
+     camera flown through it: forward, up, and pitching down until
+     it comes to rest looking across the marble.
+     Masala Bhai and the food board are objects IN that scene, so the
+     board is carried from his hands onto the table by the same camera
+     rather than by an animation laid over the top of it. The first and
+     last frames are the two supplied composites, solved for rather
+     than cut to. See js/scene.js.
+     ============================================================ -->
+<section class="experience" id="experience">
+  <div class="stage" id="stage">
+
+    <!-- the whole camera move renders here -->
+    <canvas id="gl" class="stage__gl" aria-hidden="true"></canvas>
+
+    <!-- only ever seen by the no-motion fallback, which stacks the three
+         supplied plates instead of scrubbing the move -->
+    <div class="stage__still" aria-hidden="true"></div>
+
+    <div class="hero" id="hero">
+      <p class="hero__pill"><span class="dot"></span>Rosebank &middot; Cape Town</p>
+      <h1 class="hero__title">Flavour First</h1>
+      <p class="hero__script">Masala
+Bhai</p>
+      <a class="hero__cta" href="#book">Book a Table <span aria-hidden="true">&rarr;</span></a>
+    </div>
+
+    <div class="cue" id="cue" aria-hidden="true"><span>Scroll</span><i></i></div>
+
+    <!-- the table is now the stage: courses are set down on it -->
+   
+
+  </div>
+</section>
+
+<section class="after" id="menu">
+  <h2>The rest of the site continues here</h2>
+  <p>The camera comes to rest across the marble with the board where it was set down &mdash; so whatever follows carries straight on from the same table.</p>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js"></script>
+<script type="importmap">
+{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }
+</script>
+<script type="module" src="js/scene.js"></script>
+</body>
+</html>
