@@ -1,241 +1,823 @@
 /* ============================================================
    MY Diners — tokens
    ------------------------------------------------------------
-   Taken from the material board: cream and stone as the base,
-   blush for accent, oak and black marble for depth. No cool
-   hue appears anywhere in the system — every neutral is warm.
+   Taken from the client's own mockups (About.png, reviews.png)
+   and the material board. Each colour has one job:
+     cream   every light panel          paper   every card
+     pink    the page ground, the pink panels, words on green
+     rose    the one accent: big words, buttons, stars, pins
+     ink     dark green, backgrounds only, never type or lines
+     oak     wood details: slats, the footer band, prices
+     cocoa   type on anything light
    ============================================================ */
 :root{
-  /* base */
-  --cream:#F4EBDD;
-  --ivory:#EFE6D8;
-  --marble:#F6EDE4;
-  --wall:#EFE0CD;        /* sampled from the hero plate — the stage safety net */
+  /* light */
+  --cream:#F3E8D9;       /* About.png's ground, so the pot sits in it */
+  --paper:#FBF3E3;       /* reviews.png's cards */
+  --wall:#EFE0CD;        /* behind the hero still while it loads */
 
-  /* accent */
-  /* --blush:#E6B7BE;
-  --rose:#D68D98; */
-  --blush: #F6CED6;
---rose:  #F45B84;
-  --rose-deep:#A85566;   /* white text clears AA on this one */
-  --rose-ink:#8A5A62;    /* accent text on cream */
+  /* pink */
+  --pink:#F6C3D2;        /* the page ground */
+  --pink-lt:#FBE4EA;     /* the light end of a pink gradient */
+  --rose:#CA2F60;        /* About.png's highlight: the one accent */
+  --rose-dk:#A3224B;     /* rose, pressed */
 
-  /* neutrals */
-  --taupe:#B9A792;
-  --mushroom:#AAA39C;
-  --oak:#D2AE84;
-  --brass:#B88A56;
-  --charcoal:#232224;
-  --marble-black:#1A1A1B;
+  /* wood, off the board */
+  --oak:#CEA382;
+  --walnut:#8A6A52;
 
-  /* text */
-  --ink:#3A312C;
-  --ink-soft:#6B5B4F;
+  /* dark green: backgrounds only */
+  --ink:#16333B;
+  --ink-2:#1F4550;       /* the glow in the middle of a dark panel */
 
-  --vh:1vh;              /* JS writes a px value here (stable on mobile) */
-  --vw:1vw;
+  /* type */
+  --sign:#35383B;        /* the sign's letters: dark grey metal (title.webp) */
+  --cocoa:#3A312C;
+  --cocoa-soft:#6B5B4F;
 
-  /* camera */
+  --display:"Anton","Arial Narrow",Impact,sans-serif;
+  --body:"Poppins",system-ui,-apple-system,"Segoe UI",sans-serif;
 
+  --r:28px;              /* panel corners */
+  --gut:6px;             /* the pink seam between panels */
+  --pad:clamp(1rem,4vw,3.5rem);
   --ease:cubic-bezier(.22,.61,.36,1);
+  --swing:cubic-bezier(.7,0,.2,1);
 }
 
 *,*::before,*::after{box-sizing:border-box}
-html{scroll-behavior:auto}
+html{scroll-behavior:auto;overflow-x:clip}
 body{
   margin:0;
-  font-family:"Poppins",system-ui,-apple-system,"Segoe UI",sans-serif;
-  color:var(--ink);
-  background:var(--wall);
+  font-family:var(--body);
+  color:var(--cocoa);
+  background:var(--pink);
   -webkit-font-smoothing:antialiased;
-  overflow-x:hidden;
+  overflow-x:clip;
 }
 img{display:block;max-width:100%}
 a{color:inherit;text-decoration:none}
+h1,h2,h3,p{margin:0}
+button{font:inherit;color:inherit}
 
 /* ============================================================
-   Nav
+   Shared pieces
+   ============================================================ */
+.panel{
+  position:relative;
+  margin:var(--gut) var(--gut) 0;
+  border-radius:var(--r);
+  background:var(--cream);
+  overflow:clip;
+}
+.panel--pink{background:var(--pink)}
+
+/* "● Label" — the small section marker */
+.label{
+  display:inline-flex;align-items:center;gap:.5rem;
+  font-family:var(--display);font-size:1.1rem;letter-spacing:.04em;
+  text-transform:uppercase;color:var(--rose);
+}
+.label i{width:.6rem;height:.6rem;border-radius:50%;background:var(--rose)}
+.label--center{display:flex;justify-content:center}
+
+/* big centred statement */
+.statement{
+  max-width:21em;margin:1.1rem auto 0;
+  font-family:var(--display);font-weight:400;
+  font-size:clamp(2rem,4.2vw,4rem);line-height:1.02;
+  text-transform:uppercase;text-align:center;color:var(--cocoa);
+}
+.w{display:inline-block;overflow:hidden;vertical-align:top;padding-bottom:.04em}
+.w > span{display:inline-block;will-change:transform}
+.fw{transition:color .2s linear}
+
+.btn{
+  display:inline-flex;align-items:center;gap:.5rem;padding:.7rem 1.4rem;
+  border-radius:999px;
+  font-family:var(--body);font-weight:600;font-size:.85rem;letter-spacing:.06em;text-transform:uppercase;
+  transition:background-color .3s var(--ease),color .3s var(--ease),box-shadow .3s var(--ease);
+}
+.btn--solid{background:var(--rose);color:#fff;box-shadow:0 12px 26px -12px rgba(202,47,96,.6)}
+.btn--solid:hover{background:var(--rose-dk)}
+
+/* ============================================================
+   Nav + the floating order pill
    ============================================================ */
 .nav{
   position:fixed;inset:0 0 auto 0;z-index:60;
   display:flex;align-items:center;justify-content:space-between;
-  gap:2rem;padding:1.5rem clamp(1rem,4vw,3.5rem);
-  transition:background-color .5s var(--ease),box-shadow .5s var(--ease),padding .5s var(--ease);
+  gap:1.5rem;padding:1.25rem var(--pad);
+  pointer-events:none;
 }
-.nav.is-stuck{
-  background:rgba(244,235,221,.86);
-  -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
-  box-shadow:0 1px 0 rgba(58,49,44,.08);
-  padding-top:1rem;padding-bottom:1rem;
+.nav > *{pointer-events:auto}
+.nav__brand{
+  font-weight:800;font-size:clamp(1.05rem,1.6vw,1.35rem);letter-spacing:-.02em;color:var(--cocoa);
+  transition:opacity .4s var(--ease),transform .4s var(--ease);
 }
-.nav__brand{font-weight:800;font-size:clamp(1.05rem,1.6vw,1.35rem);letter-spacing:-.02em}
-.nav__links{display:flex;gap:clamp(1.25rem,2.4vw,2.5rem);font-size:.9rem;font-weight:500}
-.nav__links a{opacity:.85;transition:opacity .3s}
-.nav__links a:hover{opacity:1}
-.nav__burger{
-  display:flex;flex-direction:column;gap:4px;justify-content:center;
-  width:34px;height:28px;padding:0;border:0;background:none;cursor:pointer;
+.nav.is-past .nav__brand{opacity:0;transform:translateY(-8px);pointer-events:none}
+.nav__pills{
+  display:flex;gap:2px;padding:4px;border-radius:999px;
+  background:var(--ink);
+  box-shadow:0 0 0 1px rgba(246,195,210,.3),0 8px 24px -14px rgba(58,49,44,.6);
 }
-.nav__burger span{display:block;height:2px;border-radius:2px;background:var(--ink)}
-.nav__burger span:last-child{width:70%}
-@media (max-width:720px){ .nav__links{display:none} }
-@media (min-width:721px){ .nav__burger{display:none} }
+.nav__pills a{
+  padding:.45rem .9rem .42rem;border-radius:999px;
+  font-family:var(--display);font-size:.95rem;letter-spacing:.03em;text-transform:uppercase;color:var(--pink);
+  transition:background-color .25s var(--ease),color .25s var(--ease);
+}
+.nav__pills a:hover{background:var(--rose);color:#fff}
+
+.order{
+  position:fixed;top:1.35rem;left:50%;z-index:61;
+  display:inline-flex;align-items:center;gap:.55rem;
+  padding:.62rem 1.2rem;border-radius:999px;
+  background:var(--rose);color:#fff;
+  font-family:var(--body);font-weight:600;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;
+  box-shadow:0 12px 26px -10px rgba(202,47,96,.6);
+  transform:translate(-50%,-180%);opacity:0;
+  transition:transform .5s var(--ease),opacity .5s var(--ease),background-color .25s;
+}
+.order i{width:.45rem;height:.45rem;border-radius:50%;background:#fff;animation:pulse 1.8s ease-in-out infinite}
+.order.is-on{transform:translate(-50%,0);opacity:1}
+.order:hover{background:var(--rose-dk)}
+@keyframes pulse{50%{opacity:.25}}
+
+@media (max-width:720px){
+  .nav{padding:1rem}
+  .nav__brand{display:none}
+  .nav{justify-content:center}
+  .nav__pills a{padding:.4rem .62rem .36rem;font-size:.84rem}
+  .order{top:auto;bottom:1rem;transform:translate(-50%,180%)}
+  .order.is-on{transform:translate(-50%,0)}
+}
 
 /* ============================================================
-   Stage
+   Loader — the sign on the wall at the restaurant (title.webp):
+   "my diners" in dark grey letters on rough nude stone. The
+   letters sign in one by one, each rising out of a blur (after
+   vesperat.framer.website), then the halo behind them flickers
+   on, and the card slides up off the hero.
+   js/loader.js runs it; without html.intro it never shows.
    ============================================================ */
-.experience{position:relative;height:760vh}
-.stage{
-  position:sticky;top:0;
-  height:100vh;height:calc(var(--vh) * 100);
-  overflow:hidden;
-  background:var(--wall);
-  isolation:isolate;
+.loader{display:none}
+.intro .loader{display:block;position:fixed;inset:0;z-index:100;overflow:hidden}
+.loader.is-out{pointer-events:none}
+/* the stone (stone.webp, a baked relief that tiles), shaded at the edges */
+.loader__card{
+  position:absolute;inset:0;
+  display:grid;place-items:center;
+  background:
+    radial-gradient(90% 80% at 50% 50%,rgba(58,49,44,0) 35%,rgba(58,49,44,.3) 100%),
+    url(../assets/stone.webp) 50% 50%/640px,
+    var(--wall);
+  transition:transform 1s var(--swing),border-radius 1s var(--swing);
+}
+/* the light the halo throws on the wall */
+.loader__card::after{
+  content:"";position:absolute;inset:0;
+  background:radial-gradient(40% 32% at 50% 50%,rgba(255,244,224,.75),rgba(255,244,224,0) 100%);
+  opacity:0;
+}
+.loader.is-out .loader__card{transform:translateY(-100%);border-radius:0 0 var(--r) var(--r)}
+.loader.is-out .loader__sig{transform:translateY(-12vh)}   /* rides up a little ahead of the card */
+
+.loader__sig{
+  position:relative;z-index:1;
+  font-family:"Mr Dafoe",cursive;font-weight:400;
+  font-size:clamp(5rem,23vw,17rem);line-height:1.3;
+  font-kerning:none;font-variant-ligatures:none;   /* the halo copy has to land under each letter */
+  color:var(--sign);white-space:nowrap;
+  padding:0 .3em;   /* the swashes run past the letters' boxes */
+  transition:transform 1s var(--swing);
+}
+.loader__sig span{
+  display:inline-block;opacity:0;filter:blur(10px);transform:translateY(.1em);
+  text-shadow:0 .02em .03em rgba(0,0,0,.28);   /* set off the wall, as the letters are */
+}
+.loader.is-signing .loader__sig span{animation:sign .6s var(--ease) calc(var(--i) * 70ms) forwards}
+@keyframes sign{to{opacity:1;filter:blur(0);transform:none}}
+
+/* the halo: the same word in light, just behind the letters */
+.loader__sig::before{
+  content:attr(data-text);
+  position:absolute;inset:0;z-index:-1;padding:inherit;
+  color:rgba(255,241,216,.95);
+  -webkit-text-stroke:.05em rgba(255,241,216,.9);
+  text-shadow:0 0 .06em #FFF4DC,0 0 .2em rgba(255,226,178,.85),0 0 .55em rgba(255,210,150,.5);
+  opacity:0;
+}
+.loader.is-lit .loader__sig::before,.loader.is-lit .loader__card::after{animation:lightup .7s linear forwards}
+@keyframes lightup{
+  0%{opacity:0} 12%{opacity:.7} 20%{opacity:.15} 34%{opacity:.85} 42%{opacity:.4} 100%{opacity:1}
 }
 
-.stage__still{display:none}
-
-/* --- the camera move ---------------------------------------------
-   Everything between the nav and the hero copy is one WebGL canvas.
-   ------------------------------------------------------------- */
-.stage__gl{
+/* ============================================================
+   Hero — pinned, with About sliding up over it.
+   Three layers share one frame: the still, the headline, and
+   Masala Bhai cut out of that same still (hero-cutout.webp), so
+   the headline sits behind his head. All three are cropped by the
+   same "cover", so they stay locked together on every screen.
+   With html.gl, js/hero.js redraws the three in one WebGL canvas
+   for the goo.
+   ============================================================ */
+.curtain{position:relative}
+.stage{
+  position:sticky;top:0;z-index:0;
+  height:100vh;height:100svh;
+  overflow:hidden;background:var(--wall);
+}
+.stage__img,.stage__cut,.stage__gl{
   position:absolute;inset:0;
   width:100%;height:100%;
-  display:block;
 }
+.stage__img,.stage__cut{object-fit:cover;object-position:center}
+.stage__cut{z-index:2;pointer-events:none}
+.stage__gl{z-index:2;display:none}
+/* js/ambience.js: light shafts and dust over everything but the copy */
+.stage__air{position:absolute;inset:0;width:100%;height:100%;z-index:2;pointer-events:none}
 
-/* a touch of light that travels with the move */
-.stage__light{
-  position:absolute;inset:0;z-index:3;pointer-events:none;
-  background:radial-gradient(120% 80% at 50% 108%,rgba(255,245,230,.30),rgba(255,245,230,0) 62%),
-             radial-gradient(90% 70% at 50% -10%,rgba(58,49,44,.10),rgba(58,49,44,0) 60%);
-  opacity:.9;
-}
-
-/* ============================================================
-   Hero copy
-   ============================================================ */
-/* The figure's head sits at 30% of frame height and the table takes
-   him at 94%, so the copy is hung off the top rather than centred:
-   the headline clears his head, and the button lands on his chest
-   where the eye is already going. */
-.hero{
-  position:absolute;inset:0;z-index:20;
-  display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
-  text-align:center;padding:calc(var(--vh) * 10) 1.25rem 0;
-  will-change:transform,opacity;
-}
-.hero__pill{
-  display:inline-flex;align-items:center;gap:.5rem;margin:0 0 1.25rem;
-  padding:.5rem 1rem;border:1px solid rgba(214,141,152,.55);border-radius:999px;
-  font-size:.78rem;font-weight:500;letter-spacing:.02em;color:var(--rose-ink);
-  background:rgba(255,255,255,.35);
-}
-.hero__pill .dot{width:6px;height:6px;border-radius:50%;background:var(--rose)}
+/* His head starts at 30% of the frame, so the headline's baseline
+   is hung at 37%: the caps fill the wall above him and his head
+   comes up in front of their feet. */
 .hero__title{
-  margin:0;font-weight:800;letter-spacing:-.035em;line-height:.9;
-  font-size:clamp(2.8rem,10.5vw,9.5rem);
+  position:absolute;left:0;right:0;bottom:63vh;bottom:63svh;z-index:1;
+  font-family:var(--display);font-weight:400;text-transform:uppercase;
+  font-size:min(16.5vw,26vh);line-height:.86;letter-spacing:0;
+  text-align:center;white-space:nowrap;color:var(--rose);
 }
-/* out to the side of his head, not over it */
+.hw{display:inline-block}
+.hw__base{display:inline-block;width:0;height:0;vertical-align:baseline}
+
+.hero{
+  position:absolute;inset:0;z-index:3;
+  display:flex;flex-direction:column;align-items:center;
+  pointer-events:none;
+}
+.hero > *{pointer-events:auto}
+/* out to the side of his head, under the headline */
 .hero__script{
-  position:absolute;top:calc(var(--vh) * 31);left:50%;
-  margin:0;font-family:"Caveat",cursive;color:var(--rose-deep);
-  font-size:clamp(1.3rem,3.2vw,2.4rem);line-height:1.05;
-  transform:translateX(clamp(6rem,13vw,15rem)) rotate(-7deg);
+  position:absolute;top:40vh;top:40svh;left:50%;
+  margin:0;font-family:"Caveat",cursive;color:var(--rose);
+  font-size:clamp(1.3rem,3vw,2.3rem);line-height:1.05;
+  transform:translateX(clamp(4.5rem,8.5vw,10rem)) rotate(-7deg);
   white-space:pre-line;text-align:left;
 }
+/* under the board, on his shirt */
 .hero__cta{
-  position:absolute;top:calc(var(--vh) * 50);
+  position:absolute;top:80vh;top:80svh;
   padding:.95rem 1.9rem;border-radius:999px;
-  background:linear-gradient(135deg,var(--blush),var(--rose));
-  color:var(--ink);font-weight:600;font-size:.95rem;
-  box-shadow:0 12px 30px -10px rgba(168,85,102,.45);
-  transition:transform .35s var(--ease),box-shadow .35s var(--ease);
+  background:var(--rose);
+  color:#fff;font-weight:600;font-size:.95rem;
+  box-shadow:0 12px 30px -10px rgba(202,47,96,.5);
+  transition:transform .35s var(--ease),box-shadow .35s var(--ease),background-color .35s var(--ease);
 }
-.hero__cta:hover{transform:translateY(-2px);box-shadow:0 18px 38px -12px rgba(168,85,102,.55)}
+.hero__cta:hover{transform:translateY(-2px);background:var(--rose-dk);box-shadow:0 18px 38px -12px rgba(202,47,96,.6)}
 
-/* On a phone the lens crops to the sides, so he fills the frame and
-   there is no room beside his head: the script tucks under the
-   headline instead, and the button sits above the board. */
+/* the strip along the bottom: where, what time it is there, and the cue */
+.stage__foot{
+  position:absolute;left:0;right:0;bottom:0;z-index:3;
+  display:flex;justify-content:space-between;align-items:flex-end;
+  padding:0 var(--pad) 1.4rem;
+  font-family:var(--display);font-size:.95rem;letter-spacing:.04em;text-transform:uppercase;color:var(--cocoa);
+}
+.stage__sep{opacity:.6;margin:0 .3rem}
+.stage__cue{display:flex;flex-direction:column;align-items:center;gap:.5rem;font-size:.75rem;letter-spacing:.2em}
+.stage__cue i{display:block;width:1.5px;height:34px;background:currentColor;transform-origin:top;animation:cue 2s var(--ease) infinite}
+@keyframes cue{0%{transform:scaleY(0)}50%{transform:scaleY(1);transform-origin:top}51%{transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
+
+/* The canvas draws the still, headline and cut-out, so the HTML ones
+   stand down (the <h1> stays in place, unseen, for screen readers and
+   for hero.js to measure). */
+.gl .stage__gl{display:block}
+.gl .stage__cut{visibility:hidden}
+.gl .hero__title{opacity:0}
+
+/* Under the loader the copy waits, and rises in as the card flips away */
+.intro .hero > *,.intro .stage__foot{
+  opacity:0;translate:0 16px;
+  transition:opacity .9s var(--ease),translate .9s var(--ease);
+}
+.intro .hero__cta{transition:opacity .9s var(--ease) .12s,translate .9s var(--ease) .12s,transform .35s var(--ease),box-shadow .35s var(--ease),background-color .35s var(--ease)}
+.intro .stage__foot{transition-delay:.25s}
+.intro .stage.is-in .hero > *,.intro .stage.is-in .stage__foot{opacity:1;translate:0 0}
+
+/* Upright screens crop to him, so he fills the frame: the headline
+   stacks into two lines above his head. */
+@media (max-aspect-ratio:1/1){
+  /* min-content wraps it at the space; the words stay inline boxes so
+     hero.js can read where each one really starts */
+  .hero__title{font-size:min(28vw,16vh);white-space:normal;width:min-content;margin:0 auto;bottom:66vh;bottom:66svh}
+}
+/* On a phone there is no room beside his head: the script goes to
+   the wall on his right, and the button drops below the board. */
 @media (max-width:720px){
   .hero__script{
-    top:calc(var(--vh) * 20);white-space:normal;text-align:center;
-    transform:translateX(-50%) rotate(-5deg);
+    top:40vh;top:40svh;left:1.1rem;
+    transform:rotate(-6deg);
   }
-  .hero__cta{top:calc(var(--vh) * 47)}
+  .hero__cta{top:auto;bottom:4.2rem}
+  .stage__foot{padding-bottom:1rem;font-size:.8rem}
 }
-
-.cue{
-  position:absolute;left:50%;bottom:2.2rem;z-index:20;
-  transform:translateX(-50%);
-  display:flex;flex-direction:column;align-items:center;gap:.6rem;
-  font-size:.7rem;letter-spacing:.24em;text-transform:uppercase;color:var(--ink-soft);
-  will-change:opacity;
-}
-.cue i{display:block;width:1px;height:38px;background:linear-gradient(var(--ink-soft),transparent)}
 
 /* ============================================================
-   Courses — set down on the same tabletop
+   About — About.png, with the letters assembling as you scroll
    ============================================================ */
-.courses{position:absolute;inset:0;z-index:30;pointer-events:none}
-.course{
-  position:absolute;inset:0;
-  display:flex;align-items:center;justify-content:center;
-  gap:clamp(1.5rem,5vw,5rem);padding:0 clamp(1.25rem,6vw,7rem);
-  opacity:0;will-change:transform,opacity;
+.about{
+  z-index:1;
+  margin-top:0;
+  min-height:100vh;min-height:100svh;
+  display:flex;flex-direction:column;align-items:center;justify-content:space-between;
+  gap:3rem;padding:clamp(7rem,16vh,10rem) var(--pad) 0;
+  background:var(--cream);
+  box-shadow:0 -30px 60px -30px rgba(58,49,44,.35);
 }
-.course__plate{
-  flex:0 0 auto;
-  width:clamp(180px,26vw,360px);aspect-ratio:1;border-radius:50%;
+.about__text{
+  max-width:17.5em;
+  font-family:var(--display);font-weight:400;
+  font-size:clamp(1.9rem,3.7vw,3.7rem);line-height:1.08;
+  text-transform:uppercase;text-align:center;color:var(--cocoa);
+}
+.about__text em{display:block;font-style:normal;color:var(--rose)}
+.ch{display:inline-block;will-change:transform,opacity}
+.wd{display:inline-block;white-space:nowrap}
+
+/* the same cut-out the Specials carousel opens on: the traveller in
+   main.js carries it from here into that first slot */
+.about__pot{position:relative;width:min(80vw,560px);margin:auto 0 clamp(2rem,6vh,4rem)}
+.about__pot img{
+  width:100%;height:auto;
+  filter:drop-shadow(0 30px 30px rgba(58,49,44,.35));
+}
+.about__steam{
+  position:absolute;left:24%;top:-18%;width:34%;height:auto;overflow:visible;
+  fill:none;stroke:#fff;stroke-width:9;stroke-linecap:round;
+  filter:blur(6px);opacity:.9;pointer-events:none;
+}
+.about__steam path{opacity:0;animation:steam 4.2s ease-in-out infinite}
+.about__pot.is-away .about__steam{display:none}
+
+/* the biryani in flight: one image, laid over the page in document
+   coordinates so native scrolling carries it without a frame of lag */
+.traveller{
+  position:absolute;left:0;top:0;z-index:40;margin:0;
+  pointer-events:none;visibility:hidden;
+  transform-origin:50% 50%;will-change:transform,width;
+  filter:drop-shadow(0 34px 34px rgba(58,49,44,.4));
+}
+.about__steam path:nth-child(2){animation-delay:1.4s}
+.about__steam path:nth-child(3){animation-delay:2.8s}
+@keyframes steam{
+  0%{opacity:0;transform:translateY(30px) scaleX(.8)}
+  35%{opacity:.55}
+  100%{opacity:0;transform:translateY(-40px) scaleX(1.25)}
+}
+
+/* ============================================================
+   Specials — the 3D carousel, on the dark green
+   ============================================================ */
+.specials{
+  padding:clamp(3rem,7vw,5rem) 0 clamp(2rem,5vw,3.5rem);
   background:
-    radial-gradient(circle at 38% 32%,#fffdfa,#f3e9de 58%,#e6d7c6 100%);
-  box-shadow:
-    0 2px 2px rgba(92,62,40,.10),
-    0 26px 44px -18px rgba(92,62,40,.42),
-    inset 0 0 0 clamp(8px,1.4vw,18px) rgba(255,255,255,.55),
-    inset 0 0 0 calc(clamp(8px,1.4vw,18px) + 1px) rgba(184,138,86,.55);
-  display:grid;place-items:center;overflow:hidden;
+    radial-gradient(60% 55% at 50% 45%,var(--ink-2) 0%,rgba(31,69,80,0) 70%),
+    var(--ink);
 }
-.course__plate img{width:100%;height:100%;object-fit:contain}
-.course__text{max-width:26rem;text-align:left}
-.course__idx{margin:0 0 .35rem;font-size:.72rem;letter-spacing:.28em;color:var(--rose-ink);font-weight:600}
-.course__text h2{margin:0;font-size:clamp(2.4rem,6.5vw,5rem);font-weight:800;letter-spacing:-.035em;line-height:1}
-.course__desc{margin:.75rem 0 0;font-size:clamp(.92rem,1.3vw,1.05rem);line-height:1.6;color:var(--ink-soft);max-width:22rem}
+.specials .label{color:var(--pink)}
+.specials .label i{background:var(--pink)}
+.car{position:relative;height:min(82vh,800px);min-height:600px}
+.car__word{
+  position:absolute;left:0;right:0;top:2%;
+  display:flex;justify-content:center;
+  font-family:var(--display);font-weight:400;text-transform:uppercase;
+  font-size:min(19vw,34vh);line-height:.9;letter-spacing:-.005em;color:var(--pink);
+  pointer-events:none;
+}
+.car__word .cw{display:inline-block;will-change:transform}
+/* perspective, not preserve-3d: each dish is projected on its own, so
+   z-index still decides what passes in front of what */
+.car__stage{position:absolute;inset:0;perspective:1400px}
+.car__item{
+  position:absolute;left:50%;top:40%;margin:0;
+  width:min(38vw,540px);
+  translate:-50% -50%;
+  transform-style:preserve-3d;
+  transition:transform 1s var(--swing),opacity 1s var(--swing),filter 1s var(--swing);
+  cursor:grab;
+}
+.car__item[data-pos="0"]{z-index:3}
+.car__tilt{transform-style:preserve-3d;transition:transform .5s var(--ease)}
+.car__item img{
+  width:100%;height:auto;pointer-events:none;user-select:none;-webkit-user-drag:none;
+  /* every dish gets the same box, so a tall one (the shake) stands no
+     higher than the wide ones */
+  max-height:min(42vh,400px,64vw);object-fit:contain;
+  filter:drop-shadow(0 30px 30px rgba(0,0,0,.5));
+  animation:bob 5s ease-in-out infinite;
+}
+@keyframes bob{50%{transform:translateY(-10px)}}
+
+/* caption and controls share one band along the bottom */
+.car__foot{
+  position:absolute;left:0;right:0;bottom:0;z-index:5;
+  display:flex;flex-direction:column;align-items:center;gap:1.6rem;
+  padding:0 var(--pad);text-align:center;
+}
+.car__name{font-family:var(--display);font-size:clamp(1.6rem,2.6vw,2.5rem);letter-spacing:.05em;text-transform:uppercase;color:var(--pink)}
+.car__desc{max-width:30rem;margin:.5rem auto 0;font-size:.9rem;line-height:1.6;color:rgba(251,244,234,.7)}
+.car__price{margin-top:.5rem;font-family:var(--display);font-size:1.35rem;letter-spacing:.04em;color:var(--paper)}
+
+.car__controls{display:flex;align-items:center;gap:1.25rem}
+.car__nav{
+  display:grid;place-items:center;width:3rem;height:3rem;border-radius:50%;
+  border:1.5px solid rgba(246,195,210,.35);background:none;cursor:pointer;
+  transition:background-color .25s var(--ease),border-color .25s var(--ease);
+}
+.car__nav svg{width:1.1rem;height:1.1rem;fill:none;stroke:var(--pink);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.car__nav:hover{background:var(--rose);border-color:var(--rose)}
+.car__nav:hover svg{stroke:#fff}
+.car__count{
+  display:flex;align-items:center;gap:.7rem;
+  font-family:var(--display);font-size:.95rem;letter-spacing:.04em;color:var(--pink);
+}
+.car__count i{position:relative;width:4.5rem;height:2px;background:rgba(246,195,210,.22)}
+.car__count b{position:absolute;inset:0 auto 0 0;width:20%;background:var(--pink);transition:width .8s var(--swing)}
+
 @media (max-width:720px){
-  .course{flex-direction:column;justify-content:center;gap:1.75rem}
-  .course__text{text-align:center}
-  .course__desc{margin-inline:auto}
+  .car{height:620px;min-height:0}
+  .car__word{top:6%;font-size:21vw}
+  .car__item{width:78vw;top:36%}
+  .car__foot{gap:1.2rem}
+  .car__nav{width:2.75rem;height:2.75rem}
 }
 
 /* ============================================================
-   After
+   Menu
    ============================================================ */
-.after{
-  min-height:70vh;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:.75rem;padding:8rem 1.5rem;text-align:center;background:var(--cream);
+.menu{padding:clamp(2.5rem,6vw,5rem) var(--pad)}
+.menu__head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:1rem 2rem;margin-bottom:clamp(1.5rem,4vw,3rem)}
+.menu__tabs{display:flex;flex-wrap:wrap;gap:.4rem}
+.menu__tabs button{
+  padding:.45rem 1rem .42rem;border:1.5px solid rgba(58,49,44,.22);border-radius:999px;background:none;cursor:pointer;
+  font-family:var(--display);font-size:1rem;letter-spacing:.03em;text-transform:uppercase;color:var(--cocoa);
+  transition:background-color .25s var(--ease),color .25s var(--ease),border-color .25s var(--ease);
 }
-.after h2{margin:0;font-size:clamp(1.4rem,3vw,2.2rem);font-weight:800;letter-spacing:-.02em}
-.after p{margin:0;max-width:38rem;color:var(--ink-soft);line-height:1.7}
-.after code{background:rgba(58,49,44,.07);padding:.15em .45em;border-radius:5px;font-size:.9em}
+.menu__tabs button:hover{background:var(--rose);border-color:var(--rose);color:#fff}
+.menu__tabs button[aria-selected="true"]{background:var(--ink);border-color:var(--ink);color:var(--pink)}
+
+.menu__body{display:grid;grid-template-columns:1fr minmax(260px,34%);gap:clamp(1.5rem,5vw,5rem);align-items:start}
+.menu__lists{display:grid}
+.menu__list{grid-area:1/1;margin:0;padding:0;list-style:none;visibility:hidden}
+.menu__list.is-on{visibility:visible}
+.menu__list li{
+  display:flex;align-items:baseline;justify-content:space-between;gap:1rem;
+  padding:.1rem 0;cursor:default;border-bottom:1px dashed rgba(182,148,119,.35);
+  font-family:var(--display);text-transform:uppercase;color:var(--rose);
+  transition:color .25s var(--ease),transform .35s var(--ease);
+}
+.menu__list li span{font-size:clamp(1.9rem,3.6vw,3.3rem);line-height:1.1}
+.menu__list li b{font-weight:400;font-size:clamp(.95rem,1.1vw,1.1rem);color:var(--walnut)}
+.menu__list li:hover{color:var(--cocoa);transform:translateX(.6rem)}
+
+.menu__card{
+  position:sticky;top:6rem;margin:0;
+  aspect-ratio:4/5;border-radius:22px;overflow:hidden;
+  display:grid;place-items:center;
+  background:
+    radial-gradient(90% 60% at 30% 20%,rgba(255,255,255,.6),transparent 60%),
+    linear-gradient(165deg,var(--pink-lt) 0%,var(--pink) 100%);
+  will-change:transform;
+  transition:transform .6s var(--ease);
+}
+.menu__card img{width:118%;max-width:none;filter:drop-shadow(0 24px 30px rgba(58,49,44,.4))}
+.menu__sticker{
+  position:absolute;right:6%;top:5%;width:30%;height:auto;
+  animation:spin 14s linear infinite;
+}
+.menu__sticker circle{fill:var(--ink)}
+.menu__sticker text{font-family:var(--display);font-size:12.6px;letter-spacing:.06em;fill:var(--pink)}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+@media (max-width:820px){
+  .menu__body{grid-template-columns:1fr}
+  .menu__card{position:relative;top:0;aspect-ratio:5/4;order:-1}
+}
 
 /* ============================================================
-   Fallback — no JS, no WebGL, or reduced motion.
-   The first and last frames of the move simply stack; nothing is
-   scrubbed, and nobody is shown a scene that never arrives.
+   The spiral — over the marble tabletop
    ============================================================ */
-.no-motion .experience{height:auto}
-.no-motion .stage{position:relative;height:auto;overflow:visible}
-.no-motion .stage__gl{display:none}
-.no-motion .stage::before,
-.no-motion .stage::after{
-  content:"";display:block;height:100vh;
-  background:var(--wall) center/cover no-repeat;
+.snake{height:clamp(440px,52vw,820px);background:var(--cream)}
+.snake__bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 50%}
+.snake__svg{
+  position:absolute;top:50%;left:50%;
+  width:max(100%,1100px);height:auto;transform:translate(-50%,-50%);overflow:visible;
 }
-.no-motion .stage::before{background-image:url(../assets/frame-start.webp)}
-.no-motion .stage::after{background-image:url(../assets/frame-end.webp)}
-.no-motion .stage__still{display:none}
-.no-motion .hero{position:absolute;top:0;opacity:1;transform:none}
-.no-motion .stage__light,.no-motion .cue{display:none}
-.no-motion .courses{position:relative;inset:auto;pointer-events:auto}
-.no-motion .course{position:relative;inset:auto;opacity:1;min-height:80vh}
-.no-motion .nav{position:sticky}
+.snake__band{fill:none;stroke:var(--rose);stroke-width:74;stroke-linejoin:round;filter:drop-shadow(0 14px 18px rgba(58,49,44,.25))}
+.snake__text{font-family:var(--display);font-size:38px;letter-spacing:.03em;fill:var(--paper)}
+
+/* ============================================================
+   Reviews — after reviews.png. The photo, the word, and Masala
+   Bhai cut out of the same photo laid exactly over it, so the word
+   sits behind his head. The star cards travel over all three.
+   ============================================================ */
+.reviews{background:var(--cocoa)}
+.reviews__pin{
+  position:sticky;top:0;height:100vh;height:100svh;overflow:hidden;
+}
+/* the photo's own frame, scaled to cover the pin the way
+   object-fit:cover would, so all three layers share one geometry */
+.reviews__frame{
+  position:absolute;left:50%;top:50%;
+  width:max(100%,calc(100vh * 1687 / 932));width:max(100%,calc(100svh * 1687 / 932));
+  aspect-ratio:1687/932;translate:-50% -50%;
+  will-change:transform;
+}
+.reviews__photo,.reviews__person{position:absolute;inset:0;width:100%;height:100%}
+.reviews__person{z-index:2}
+/* its foot sits at 43% of the photo, over his hair, so his head
+   comes up in front of it */
+.reviews__word{
+  position:absolute;left:50%;bottom:57%;z-index:1;translate:-50% 0;
+  white-space:nowrap;
+  font-family:var(--display);font-weight:400;text-transform:uppercase;
+  font-size:min(21vw,34vh);line-height:.8;
+  color:#F45B84;                    /* the site's own hot pink, as asked, not reviews.png's red */
+  text-shadow:0 18px 40px rgba(58,49,44,.22);
+}
+.reviews__label{position:absolute;left:0;right:0;top:clamp(4.6rem,10vh,6rem);z-index:3}
+.reviews__label{width:max-content;margin:0 auto;padding:.4rem .85rem;border-radius:999px;background:rgba(251,244,234,.92)}
+/* the cards stick: each has its own slot in the pinned frame, three
+   down either side of him, clear of his face. They arrive one at a
+   time as you scroll the section and then stay. */
+.reviews{height:260vh;height:260svh}
+.reviews__cards{
+  --cw:min(19.5rem,25vw);
+  position:absolute;inset:0;z-index:3;pointer-events:none;
+  display:grid;grid-template-columns:var(--cw) 1fr var(--cw);grid-auto-rows:auto;
+  align-content:end;row-gap:clamp(.6rem,2vh,1.1rem);
+  padding:0 3vw clamp(1rem,4vh,2.2rem);
+}
+/* a column each side of him, three slots deep; the middle row sits a
+   touch further in, so each side reads as a loose stack */
+.review:nth-child(odd){grid-column:1}
+.review:nth-child(even){grid-column:3}
+.review:nth-child(1),.review:nth-child(2){grid-row:1}
+.review:nth-child(3),.review:nth-child(4){grid-row:2}
+.review:nth-child(5),.review:nth-child(6){grid-row:3}
+.review:nth-child(3){margin-left:2vw;margin-right:-2vw}
+.review:nth-child(4){margin-right:2vw;margin-left:-2vw}
+.review{
+  position:relative;pointer-events:auto;padding:1rem 1.15rem 1.05rem;border-radius:18px;
+  background:var(--paper);color:var(--cocoa);
+  box-shadow:0 26px 44px -26px rgba(58,49,44,.55);
+  will-change:transform;
+}
+.review header{display:flex;align-items:center;gap:.7rem}
+.review__av{
+  display:grid;place-items:center;flex:0 0 2.7rem;height:2.7rem;border-radius:50%;
+  font-family:var(--display);font-size:1.2rem;color:#fff;
+  background:var(--rose);
+  box-shadow:0 0 0 2.5px var(--paper),0 0 0 4px var(--pink);
+}
+.review__stars{font-size:1.15rem;letter-spacing:.12em;color:var(--rose)}
+.review p{margin-top:.55rem;font-size:.95rem;line-height:1.4;font-weight:500;color:var(--cocoa)}
+.review h3{
+  margin-top:.65rem;padding-top:.55rem;border-top:1px solid rgba(182,148,119,.35);
+  font-family:var(--body);font-weight:600;font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;color:var(--cocoa-soft);
+}
+/* the little burst of pink strokes on the corner, as in reviews.png */
+.review__spark{position:absolute;right:-14px;top:-16px;width:30px;height:30px}
+.review__spark::before,.review__spark::after,.review__spark{background:
+  linear-gradient(var(--rose),var(--rose)) 50% 0/3px 11px no-repeat}
+.review__spark::before,.review__spark::after{content:"";position:absolute;inset:0;border-radius:2px}
+.review__spark::before{transform:rotate(-50deg)}
+.review__spark::after{transform:rotate(50deg)}
+.review:nth-child(odd) .review__spark{right:auto;left:-14px;transform:scaleX(-1)}
+
+@media (min-width:721px) and (max-height:820px){
+  .review{padding:.7rem .9rem .75rem}
+  .review p{margin-top:.35rem;font-size:.82rem;line-height:1.35}
+  .review h3{margin-top:.4rem;padding-top:.35rem}
+  .review__av{flex-basis:2.2rem;height:2.2rem;font-size:1rem}
+}
+
+@media (max-width:720px){
+  /* the phone only sees the middle of the photo, where his head
+     fills the width, so the word goes up above it */
+  .reviews__word{font-size:21vw;bottom:78%}
+  /* no room either side of him on a phone, so the bottom of the
+     frame is kept for them: each lands on the pile, a little turned */
+  .reviews__cards{grid-template-columns:1fr;justify-items:center;padding-bottom:calc(5.5rem + env(safe-area-inset-bottom))}
+  .review:nth-child(n){grid-column:1;grid-row:1;width:min(20rem,86vw);margin:0}
+}
+
+/* ============================================================
+   Occasions — statement, then a drifting row of cards
+   ============================================================ */
+.occasions{padding:clamp(3.5rem,9vw,7rem) 0 clamp(3rem,7vw,5rem)}
+.occasions .statement{padding:0 var(--pad)}
+.rail{margin-top:clamp(2.5rem,6vw,4.5rem);overflow:hidden}
+.rail__track{display:flex;gap:1.5rem;width:max-content;animation:rail 48s linear infinite}
+.rail:hover .rail__track{animation-play-state:paused}
+@keyframes rail{to{transform:translateX(calc(-50% - .75rem))}}
+.occ{
+  flex:0 0 auto;width:clamp(240px,22vw,320px);
+  padding:.8rem .8rem 1.2rem;border-radius:20px;background:var(--paper);
+  box-shadow:0 20px 34px -26px rgba(58,49,44,.55);
+  transition:transform .4s var(--ease);
+}
+.occ:hover{transform:translateY(-6px) rotate(-1deg)}
+.occ__tag{font-family:var(--display);font-size:.9rem;letter-spacing:.04em;text-transform:uppercase;color:var(--rose)}
+.occ__img{margin:.55rem 0 .9rem;aspect-ratio:4/3;border-radius:12px;overflow:hidden;background:var(--pink-lt)}
+.occ__img img{width:100%;height:100%;object-fit:cover}
+.occ__img--food{background:linear-gradient(160deg,var(--pink-lt),var(--pink))}
+.occ__img--food img{object-fit:contain;padding:8%}
+.occ h3{font-family:var(--display);font-weight:400;font-size:2.1rem;line-height:.98;text-transform:uppercase;color:var(--cocoa)}
+.occ p{margin-top:.4rem;font-size:.82rem;line-height:1.45;color:var(--cocoa-soft)}
+
+/* ============================================================
+   Visit — the route between the two tables
+   ============================================================ */
+.visit{
+  display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:2rem;
+  padding:clamp(3.5rem,8vw,6rem) var(--pad);
+  background:
+    repeating-linear-gradient(45deg,rgba(182,148,119,.08) 0 1px,transparent 1px 34px),
+    repeating-linear-gradient(-45deg,rgba(182,148,119,.08) 0 1px,transparent 1px 34px),
+    var(--cream);
+}
+.visit__line{
+  margin-top:.8rem;
+  font-family:var(--display);font-weight:400;text-transform:uppercase;
+  font-size:clamp(2rem,4.4vw,4.2rem);line-height:1.02;color:var(--cocoa);
+}
+.visit__line--track{margin-top:0;white-space:nowrap;color:var(--rose)}
+.visit__sub{max-width:26rem;margin:1rem 0 1.6rem;font-size:.95rem;line-height:1.6;color:var(--cocoa-soft)}
+
+.map{position:relative;aspect-ratio:600/520;width:100%;max-width:620px;justify-self:center}
+.map__svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.map__route-bg{fill:none;stroke:rgba(202,47,96,.14);stroke-width:14;stroke-linecap:round}
+.map__route{fill:none;stroke:var(--rose);stroke-width:3.5;stroke-linecap:round;stroke-dasharray:2 14}
+.pin{position:absolute;translate:-50% -100%}
+.pin--jhb{left:78.3%;top:17.3%}
+.pin--cpt{left:18.3%;top:84.6%}
+.pin__dot{
+  display:block;width:30px;height:30px;margin:0 auto;border-radius:50% 50% 50% 0;
+  background:var(--rose);transform:rotate(-45deg);
+  box-shadow:inset 0 0 0 9px var(--rose),inset 0 0 0 30px #fff;
+}
+.pin__card{
+  position:absolute;bottom:calc(100% + 10px);left:50%;translate:-50% 0;
+  min-width:11.5rem;padding:.75rem .95rem;border-radius:14px;background:var(--paper);
+  box-shadow:0 20px 36px -20px rgba(58,49,44,.55);
+}
+.pin--cpt .pin__card{left:120%;bottom:auto;top:-40px;translate:0 0}
+.pin__city{font-family:var(--display);font-size:1.5rem;line-height:1;text-transform:uppercase;color:var(--cocoa)}
+.pin__area{margin:.2rem 0 .45rem;font-size:.75rem;color:var(--cocoa-soft)}
+.pin__card a{font-size:.72rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--rose)}
+
+@media (max-width:820px){
+  .visit{grid-template-columns:1fr;text-align:center}
+  .visit .label{justify-content:center}
+  .visit__sub{margin-inline:auto}
+  .visit__line--track{white-space:normal}
+}
+
+/* ============================================================
+   FAQ — on pink
+   ============================================================ */
+.faq{padding:clamp(4rem,9vw,7rem) var(--pad)}
+.faq__list{display:grid;gap:.7rem;max-width:36rem;margin:clamp(2rem,5vw,3.5rem) auto 0}
+.qa{border-radius:14px;background:var(--paper);box-shadow:0 14px 26px -22px rgba(58,49,44,.8)}
+.qa summary{
+  display:flex;align-items:center;justify-content:space-between;gap:1rem;
+  padding:.9rem 1.1rem .85rem;cursor:pointer;list-style:none;
+  font-family:var(--display);font-size:1.15rem;letter-spacing:.02em;color:var(--cocoa);
+}
+.qa summary::-webkit-details-marker{display:none}
+.qa summary i{position:relative;flex:0 0 14px;height:14px;color:var(--rose);transition:transform .35s var(--ease)}
+.qa summary i::before,.qa summary i::after{content:"";position:absolute;left:0;top:6px;width:14px;height:2px;background:currentColor}
+.qa summary i::after{transform:rotate(90deg)}
+.qa[open] summary i{transform:rotate(45deg)}
+.qa__a{padding:0 1.1rem 1.1rem;font-size:.92rem;line-height:1.6;color:var(--cocoa-soft)}
+
+/* ============================================================
+   Footer — a dark green panel: oak slats along the top, the ask,
+   three columns, and a sign-off with Masala Bhai behind it
+   ============================================================ */
+.foot{
+  margin:var(--gut);padding:0 0 1.4rem;border-radius:var(--r);overflow:clip;
+  background:var(--ink);color:var(--pink);
+}
+/* the oak slat wall off the material board */
+.slats{
+  height:clamp(40px,6vw,70px);margin:var(--gut) var(--gut) clamp(2rem,5vw,3.5rem);border-radius:calc(var(--r) - var(--gut));
+  background:repeating-linear-gradient(90deg,var(--oak) 0 44px,var(--walnut) 44px 47px,var(--ink) 47px 58px,var(--walnut) 58px 61px);
+  box-shadow:inset 0 -10px 20px -12px rgba(58,49,44,.5);
+}
+/* the ask, big */
+.foot__cta{
+  display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:1rem 2rem;
+  padding:0 var(--pad) clamp(2rem,5vw,3.5rem);
+  border-bottom:1px solid rgba(246,195,210,.18);
+}
+.foot__cta .label{color:var(--pink);font-size:clamp(1.8rem,4vw,3.6rem);gap:.8rem;line-height:1}
+.foot__cta .label i{width:.9rem;height:.9rem}
+.foot__book{
+  display:inline-flex;align-items:center;gap:.8rem;
+  padding:clamp(.9rem,1.6vw,1.2rem) clamp(1.6rem,3vw,2.4rem);border-radius:999px;
+  background:var(--rose);color:#fff;
+  font-family:var(--display);font-size:clamp(1.4rem,2.8vw,2.4rem);letter-spacing:.03em;text-transform:uppercase;
+  box-shadow:0 18px 40px -18px rgba(202,47,96,.8);
+  transition:background-color .3s var(--ease),transform .4s var(--ease);
+}
+.foot__book span{display:inline-block;transition:transform .4s var(--ease)}
+.foot__book:hover{background:var(--rose-dk);transform:translateY(-3px)}
+.foot__book:hover span{transform:translateX(.35rem)}
+
+.foot__cols{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:2rem;
+  padding:clamp(2rem,5vw,3.5rem) var(--pad) 0;
+}
+.foot__col{display:flex;flex-direction:column;align-items:flex-start;gap:.45rem}
+.foot__head{
+  margin-bottom:.35rem;font-family:var(--body);font-weight:600;font-size:.72rem;
+  letter-spacing:.24em;text-transform:uppercase;color:var(--oak);
+}
+.foot__col > a{
+  position:relative;font-family:var(--display);font-size:clamp(1.2rem,1.8vw,1.6rem);
+  letter-spacing:.02em;text-transform:uppercase;line-height:1.1;
+}
+.foot__col > a::after{
+  content:"";position:absolute;left:0;right:0;bottom:-2px;height:2px;background:var(--rose);
+  transform:scaleX(0);transform-origin:right;transition:transform .4s var(--ease);
+}
+.foot__col > a:hover::after{transform:scaleX(1);transform-origin:left}
+.foot__time{margin-top:.6rem;font-size:.8rem;color:rgba(246,195,210,.7)}
+.foot__time b{font-family:var(--display);font-weight:400;font-size:1.05rem;letter-spacing:.04em;color:var(--pink)}
+.foot__small{max-width:16rem;margin-top:.5rem;font-size:.8rem;line-height:1.5;color:rgba(246,195,210,.7)}
+
+.foot__social{display:flex;gap:.55rem}
+.foot__social a{display:grid;place-items:center;width:2.6rem;height:2.6rem;border-radius:50%;background:var(--rose);transition:background-color .25s,transform .35s var(--ease)}
+.foot__social a:hover{background:var(--pink);transform:translateY(-3px) rotate(-8deg)}
+.foot__social svg{width:1.2rem;height:1.2rem;fill:none;stroke:#fff;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;transition:stroke .25s}
+.foot__social .fill{fill:#fff;stroke:none}
+.foot__social a:hover svg{stroke:var(--ink)}
+.foot__social a:hover .fill{fill:var(--ink)}
+
+/* the sign-off: a word the full width of the panel, with Masala Bhai
+   standing behind it. He rises as the footer arrives. */
+.foot__sign{
+  position:relative;margin-top:clamp(1.5rem,4vw,3rem);
+  display:grid;place-items:end center;
+  height:clamp(15rem,34vw,31rem);overflow:hidden;
+}
+.foot__bhai{
+  position:absolute;left:50%;bottom:0;z-index:0;
+  height:112%;width:auto;translate:-50% 0;
+  filter:drop-shadow(0 20px 30px rgba(0,0,0,.35));
+  will-change:transform;
+}
+.foot__word{
+  position:relative;z-index:1;width:100%;
+  display:flex;justify-content:center;
+  font-family:var(--display);text-transform:uppercase;white-space:nowrap;
+  font-size:15.6vw;line-height:.78;letter-spacing:-.01em;color:var(--pink);
+  margin-bottom:-.02em;
+}
+.foot__word .fl{display:inline-block}
+.foot__word .fl > span{display:inline-block;transition:transform .45s cubic-bezier(.3,1.8,.5,1),color .3s}
+.foot__word .fl:hover > span{transform:translateY(-12%) rotate(-4deg);color:var(--paper)}
+.foot__word .fl--gap{width:.28em}
+
+.foot__base{
+  display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.6rem 1.5rem;
+  padding:1.1rem var(--pad) 0;border-top:1px solid rgba(246,195,210,.18);
+  font-family:var(--display);font-size:.9rem;letter-spacing:.03em;text-transform:uppercase;
+}
+.foot__base span{margin:0 .35rem;opacity:.6}
+.foot__base a:hover{color:var(--paper)}
+.foot__top{
+  display:inline-flex;align-items:center;gap:.45rem;padding:.45rem .9rem;border-radius:999px;
+  border:1.5px solid rgba(246,195,210,.45);transition:background-color .25s,color .25s,border-color .25s;
+}
+.foot__top:hover,.foot__base .foot__top:hover{background:var(--pink);border-color:var(--pink);color:var(--ink)}
+
+@media (max-width:720px){
+  .foot__cols{grid-template-columns:1fr 1fr}
+  .foot__cols .foot__col:last-child{grid-column:1/-1}
+  .foot__cta{justify-content:center;text-align:center}
+  .foot__book{width:100%;justify-content:center}
+  .foot__sign{height:62vw}
+  .foot__base{justify-content:center;text-align:center;padding-bottom:4.5rem}
+}
+
+/* ============================================================
+   Reduced motion: everything is shown in its final state and
+   nothing is scrubbed.
+   ============================================================ */
+@media (prefers-reduced-motion:reduce){
+  .rail__track,.menu__sticker,.about__steam path,.stage__cue i,.order i,.car__item img{animation:none}
+  .about__steam{display:none}
+  .rail{overflow-x:auto}
+  .car__item{transition:none}
+}

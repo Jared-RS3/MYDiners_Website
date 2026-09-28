@@ -5,79 +5,494 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>MY Diners — Flavour First</title>
 <meta name="description" content="MY Diners, Rosebank &amp; Cape Town. Flavour first — grills, biryanis, curries and platters.">
-<meta name="theme-color" content="#EFE0CD">
+<meta name="theme-color" content="#F6C3D2">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=Poppins:wght@400;500;600;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Caveat:wght@600&family=Poppins:wght@400;500;600;800&display=swap" rel="stylesheet">
+<!-- the loader's signature: only the letters it signs -->
+<link href="https://fonts.googleapis.com/css2?family=Mr+Dafoe&text=my%20diners&display=block" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
 
-<link rel="preload" as="image" href="assets/hero.webp">
-<link rel="preload" as="image" href="assets/hero-table.webp">
-<link rel="preload" as="image" href="assets/bhai.webp">
-<link rel="preload" as="image" href="assets/platter.webp">
+<link rel="preload" as="image" href="assets/stone.webp">
+<link rel="preload" as="image" href="assets/hero-still.webp" media="(min-width: 821px)">
+<link rel="preload" as="image" href="assets/hero-still-sm.webp" media="(max-width: 820px)">
+
+<!-- .intro puts up the loader (js/loader.js); .gl lets js/hero.js draw
+     the hero in WebGL. With reduced motion there is neither. If the
+     loader never runs, the bail takes it down. -->
+<script>
+  (function (root) {
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    root.classList.add('intro');
+    if (window.WebGLRenderingContext) root.classList.add('gl');
+    window.__introBail = setTimeout(function () { root.classList.remove('intro'); }, 8000);
+  })(document.documentElement);
+</script>
 </head>
 <body>
 
+<!-- ============================================================
+     LOADER — the sign on the wall at the restaurant (title.webp)
+     signs itself, lights up, and slides off the hero.
+     js/loader.js runs it; it only shows with html.intro.
+     ============================================================ -->
+<div class="loader" id="loader" aria-hidden="true">
+  <div class="loader__card">
+    <p class="loader__sig" data-text="my diners"><span style="--i:0">m</span><span style="--i:1">y</span> <span style="--i:2">d</span><span style="--i:3">i</span><span style="--i:4">n</span><span style="--i:5">e</span><span style="--i:6">r</span><span style="--i:7">s</span></p>
+  </div>
+</div>
+
 <header class="nav" id="nav">
-  <a class="nav__brand" href="#">MY Diners</a>
-  <nav class="nav__links">
-    <a href="#menu">Menu</a>
-    <a href="#book">Book</a>
+  <a class="nav__brand" href="#top">MY Diners</a>
+  <nav class="nav__pills" aria-label="Main">
     <a href="#about">About</a>
-    <a href="#contact">Contact</a>
+    <a href="#specials">Specials</a>
+    <a href="#menu">Menu</a>
+    <a href="#visit">Visit</a>
   </nav>
-  <button class="nav__burger" type="button" aria-label="Open menu"><span></span><span></span><span></span></button>
 </header>
 
+<!-- floats in once the hero is covered -->
+<!-- <a class="order" id="order" href="#visit"><i></i>Book a Table</a> -->
+
+<main>
+
 <!-- ============================================================
-     THE CAMERA MOVE
-     A 2.5D reconstruction of the room in the hero plate, with one
-     camera flown through it: forward, up, and pitching down until
-     it comes to rest looking across the marble.
-     Masala Bhai and the food board are objects IN that scene, so the
-     board is carried from his hands onto the table by the same camera
-     rather than by an animation laid over the top of it. The first and
-     last frames are the two supplied composites, solved for rather
-     than cut to. See js/scene.js.
+     HERO + ABOUT
+     The hero is pinned, and the About panel slides up over it as
+     you scroll. Three layers share one frame: the still, the
+     headline, and Masala Bhai cut out of that same still, so the
+     headline sits behind his head. js/hero.js redraws all three in
+     WebGL to add the goo; without it, CSS stacks them as they are.
      ============================================================ -->
-<section class="experience" id="experience">
-  <div class="stage" id="stage">
+<div class="curtain">
+  <section class="stage" id="top">
+    <picture>
+      <source media="(max-width: 820px)" srcset="assets/hero-still-sm.webp">
+      <img class="stage__img" id="heroImg" src="assets/hero-still.webp" alt="Masala Bhai in his red jacket at MY Diners, hands out" fetchpriority="high">
+    </picture>
 
-    <!-- the whole camera move renders here -->
-    <canvas id="gl" class="stage__gl" aria-hidden="true"></canvas>
+    <h1 class="hero__title" id="heroTitle"><span class="hw">Flavour</span> <span class="hw">First</span></h1>
 
-    <!-- only ever seen by the no-motion fallback, which stacks the three
-         supplied plates instead of scrubbing the move -->
-    <div class="stage__still" aria-hidden="true"></div>
+    <picture>
+      <source media="(max-width: 820px)" srcset="assets/hero-cutout-sm.webp">
+      <img class="stage__cut" id="heroCut" src="assets/hero-cutout.webp" alt="" aria-hidden="true">
+    </picture>
+
+    <canvas class="stage__gl" id="heroGl" aria-hidden="true"></canvas>
+    <canvas class="stage__air" id="heroAir" aria-hidden="true"></canvas>
 
     <div class="hero" id="hero">
-      <p class="hero__pill"><span class="dot"></span>Rosebank &middot; Cape Town</p>
-      <h1 class="hero__title">Flavour First</h1>
       <p class="hero__script">Masala
 Bhai</p>
-      <a class="hero__cta" href="#book">Book a Table <span aria-hidden="true">&rarr;</span></a>
+      <a class="hero__cta" href="#visit">Book a Table <span aria-hidden="true">&rarr;</span></a>
     </div>
 
-    <div class="cue" id="cue" aria-hidden="true"><span>Scroll</span><i></i></div>
+    <div class="stage__foot">
+      <p class="stage__where">Rosebank &middot; Cape Town</p>
+      <!-- <p class="stage__cue" aria-hidden="true"><i></i>Scroll</p> -->
+    </div>
+  </section>
 
-    <!-- the table is now the stage: courses are set down on it -->
-   
+  <section class="panel about" id="about">
+    <h2 class="about__text" data-chars>We serve good food. The family meet-ups, birthday dinners, late night cravings, random catch-ups, new friendships, crazy ideas and life updates that happen around our tables &mdash; that&rsquo;s what <em>MY Diners is all about.</em></h2>
 
+    <div class="about__pot" id="pot">
+      <svg class="about__steam" viewBox="0 0 200 160" aria-hidden="true">
+        <path d="M60 150 C 40 115, 80 95, 60 60 S 70 15, 60 0"/>
+        <path d="M100 150 C 80 115, 120 95, 100 60 S 110 15, 100 0"/>
+        <path d="M140 150 C 120 115, 160 95, 140 60 S 150 15, 140 0"/>
+      </svg>
+      <img id="potImg" src="assets/biryani-travel.webp" srcset="assets/biryani-travel-sm.webp 627w, assets/biryani-travel.webp 1254w" sizes="(max-width: 720px) 80vw, 560px" alt="Chicken biryani in a hammered copper handi with a bowl of onion raita" loading="lazy">
+    </div>
+  </section>
+</div>
+
+<!-- ============================================================
+     SPECIALS — a 3D carousel
+     The dish in front of the word; the others wait, small and faint,
+     at the edges. One row of controls sits under the caption.
+     To add a special: copy a .car__item, give it a transparent PNG
+     or WebP cut-out, and fill in the data- attributes.
+     PLACEHOLDER: prices are sample values.
+     ============================================================ -->
+<section class="panel specials" id="specials">
+  <p class="label label--center"><i></i>Masala Bhai&rsquo;s specials</p>
+
+  <div class="car" id="car" aria-roledescription="carousel" aria-label="Specials">
+    <h2 class="car__word" id="carWord" aria-hidden="true">Specials</h2>
+
+    <div class="car__stage" id="carStage">
+      <!-- first, because it arrives here from About (see the traveller in main.js) -->
+      <figure class="car__item"
+        data-name="Chicken Biryani"
+        data-desc="Dum-cooked basmati layered with spiced chicken, crispy onions, mint and coriander. Served in the handi with onion raita."
+        data-price="R155">
+        <div class="car__tilt"><img id="carBiryani" src="assets/biryani-travel.webp" alt="Chicken biryani in a hammered copper handi with a bowl of onion raita"></div>
+      </figure>
+      <figure class="car__item"
+        data-name="The Tikka Board"
+        data-desc="Flame-grilled chicken tikka, garlic naan, masala chips, mint raita and pickled onions. Built to share."
+        data-price="R189">
+        <div class="car__tilt"><img src="assets/special-tikka.webp" alt="The Tikka Board: grilled chicken tikka, garlic naan, masala chips, raita and pickled onions on a wooden board"></div>
+      </figure>
+
+      <figure class="car__item"
+        data-name="Butter Chicken"
+        data-desc="Charred chicken in a silky tomato and butter gravy, finished with cream. With jeera rice and garlic naan."
+        data-price="R159">
+        <div class="car__tilt"><img src="assets/special-butter-chicken.webp" alt="Butter chicken in a copper karahi with jeera rice and garlic naan on a wooden board" loading="lazy"></div>
+      </figure>
+      <figure class="car__item"
+        data-name="The Diner Burger"
+        data-desc="A thick grilled beef patty, melted cheddar, caramelised onions and house sauce on a toasted brioche bun. With masala chips."
+        data-price="R139">
+        <div class="car__tilt"><img src="assets/special-burger.webp" alt="A cheeseburger on a brioche bun with a basket of chips and a pot of sauce on a wooden board" loading="lazy"></div>
+      </figure>
+      <figure class="car__item"
+        data-name="Strawberry Shake"
+        data-desc="Thick strawberry milkshake under whipped cream and fresh strawberries, with pink sauce running down the glass."
+        data-price="R65">
+        <div class="car__tilt"><img src="assets/special-shake.webp" alt="A strawberry milkshake topped with whipped cream and strawberries, pink sauce running down the glass" loading="lazy"></div>
+      </figure>
+    </div>
+
+    <div class="car__foot">
+      <div class="car__info" aria-live="polite">
+        <p class="car__name" id="carName">Chicken Biryani</p>
+        <p class="car__desc" id="carDesc">Dum-cooked basmati layered with spiced chicken, crispy onions, mint and coriander. Served in the handi with onion raita.</p>
+        <p class="car__price" id="carPrice">R155</p>
+      </div>
+
+      <div class="car__controls">
+        <button class="car__nav" id="carPrev" type="button" aria-label="Previous special"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+        <p class="car__count" aria-hidden="true"><span id="carIdx">01</span><i><b id="carBar"></b></i><span id="carTotal">05</span></p>
+        <button class="car__nav" id="carNext" type="button" aria-label="Next special"><svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+      </div>
+    </div>
   </div>
 </section>
 
-<section class="after" id="menu">
-  <h2>The rest of the site continues here</h2>
-  <p>The camera comes to rest across the marble with the board where it was set down &mdash; so whatever follows carries straight on from the same table.</p>
+<!-- ============================================================
+     MENU
+     PLACEHOLDER: dishes and prices are sample content. Replace them
+     with the real menu before launch.
+     ============================================================ -->
+<section class="panel menu" id="menu">
+  <div class="menu__head">
+    <p class="label"><i></i>Menu</p>
+    <div class="menu__tabs" role="tablist">
+      <button role="tab" aria-selected="true" data-tab="grills">Grills</button>
+      <button role="tab" aria-selected="false" data-tab="biryanis">Biryanis</button>
+      <button role="tab" aria-selected="false" data-tab="curries">Curries</button>
+      <button role="tab" aria-selected="false" data-tab="sides">Sides &amp; Sweet</button>
+    </div>
+  </div>
+
+  <div class="menu__body">
+    <div class="menu__lists">
+      <ul class="menu__list is-on" data-list="grills">
+        <li><span>Chicken Tikka Board</span><b>R189</b></li>
+        <li><span>Lamb Chops (4)</span><b>R245</b></li>
+        <li><span>Seekh Kebab Platter</span><b>R165</b></li>
+        <li><span>Tandoori Half Chicken</span><b>R149</b></li>
+        <li><span>Peri-Peri Wings</span><b>R119</b></li>
+        <li><span>Mixed Grill for Two</span><b>R399</b></li>
+      </ul>
+      <ul class="menu__list" data-list="biryanis">
+        <li><span>Lamb Dum Biryani</span><b>R185</b></li>
+        <li><span>Chicken Biryani</span><b>R155</b></li>
+        <li><span>Mutton Akhni</span><b>R175</b></li>
+        <li><span>Prawn Biryani</span><b>R210</b></li>
+        <li><span>Veg Biryani</span><b>R125</b></li>
+      </ul>
+      <ul class="menu__list" data-list="curries">
+        <li><span>Butter Chicken</span><b>R159</b></li>
+        <li><span>Lamb Rogan Josh</span><b>R189</b></li>
+        <li><span>Mutton Curry</span><b>R179</b></li>
+        <li><span>Prawn Masala</span><b>R199</b></li>
+        <li><span>Paneer Makhani</span><b>R139</b></li>
+        <li><span>Dhal Tadka</span><b>R99</b></li>
+      </ul>
+      <ul class="menu__list" data-list="sides">
+        <li><span>Garlic Naan</span><b>R35</b></li>
+        <li><span>Butter Roti</span><b>R25</b></li>
+        <li><span>Masala Chips</span><b>R45</b></li>
+        <li><span>Mint Raita</span><b>R30</b></li>
+        <li><span>Mango Lassi</span><b>R55</b></li>
+        <li><span>Falooda</span><b>R69</b></li>
+      </ul>
+    </div>
+
+    <figure class="menu__card" id="menuCard">
+      <img src="assets/platter.webp" alt="" loading="lazy">
+      <svg class="menu__sticker" viewBox="0 0 120 120" aria-hidden="true">
+        <defs><path id="stickerPath" d="M60 60 m-44 0 a44 44 0 1 1 88 0 a44 44 0 1 1 -88 0"/></defs>
+        <circle cx="60" cy="60" r="58"/>
+        <text><textPath href="#stickerPath">MASALA BHAI&rsquo;S PICK &bull; MASALA BHAI&rsquo;S PICK &bull;</textPath></text>
+      </svg>
+    </figure>
+  </div>
 </section>
 
+<!-- ============================================================
+     THE SPIRAL — a line of type running along a band laid over
+     the marble tabletop (table.png)
+     ============================================================ -->
+<section class="panel snake" aria-label="Flavour first. The best nights start at our table.">
+  <picture>
+    <source media="(max-width: 820px)" srcset="assets/spiral-table-sm.webp">
+    <img class="snake__bg" src="assets/spiral-table.webp" alt="" loading="lazy">
+  </picture>
+  <svg class="snake__svg" viewBox="0 0 1440 600" aria-hidden="true">
+    <!-- the path starts far off to the left, so the text can be walked
+         along it with a positive offset in every browser -->
+    <path id="snakePath" class="snake__band"
+      d="M -1600 470 H 330 A 90 90 0 0 0 330 290 H 160 A 90 90 0 0 1 160 110 H 560 A 110 110 0 0 1 670 220 V 400 A 100 100 0 0 0 870 400 V 190 A 100 100 0 0 1 1070 190 V 400 A 100 100 0 0 0 1270 400 V 250 A 100 100 0 0 1 1470 250 V 700"/>
+    <text class="snake__text" dy="13"><textPath id="snakeText" href="#snakePath">FLAVOUR FIRST. THE BEST NIGHTS START AT OUR TABLE. &#8195;</textPath></text>
+  </svg>
+</section>
+
+<!-- ============================================================
+     REVIEWS — after reviews.png. Three layers in one frame: the
+     photo (reviews-person.png), the word, and Masala Bhai cut out
+     of that same photo laid exactly over it, so the word sits
+     behind his head. The star cards travel over all three.
+     PLACEHOLDER: these quotes are sample copy, not real reviews.
+     Swap in real guest reviews (e.g. from Google) before launch.
+     ============================================================ -->
+<section class="panel reviews" id="reviews">
+  <div class="reviews__pin">
+    <div class="reviews__frame" id="revFrame">
+      <img class="reviews__photo" src="assets/reviews-bg.webp" alt="Masala Bhai biting into a chicken tikka skewer in the restaurant" loading="lazy">
+      <h2 class="reviews__word" id="revWord">Reviews</h2>
+      <img class="reviews__person" src="assets/reviews-person.webp" alt="" aria-hidden="true" loading="lazy">
+    </div>
+    <p class="label label--center reviews__label"><i></i>What our tables say</p>
+    <div class="reviews__cards">
+      <article class="review" data-speed="1.2" data-tilt="-4">
+        <header><span class="review__av">T</span><span class="review__stars" aria-label="5 stars">&#9733;&#9733;&#9733;&#9733;&#9733;</span></header>
+        <p>&ldquo;Came for the tikka board, stayed three hours. The naan alone is worth the drive.&rdquo;</p>
+        <h3>Thandi M.</h3>
+        <i class="review__spark" aria-hidden="true"></i>
+      </article>
+      <article class="review" data-speed="0.8" data-tilt="3">
+        <header><span class="review__av">Y</span><span class="review__stars" aria-label="5 stars">&#9733;&#9733;&#9733;&#9733;&#9733;</span></header>
+        <p>&ldquo;Proper biryani, the kind my gran would approve of. Highest compliment I&rsquo;ve got.&rdquo;</p>
+        <h3>Yusuf K.</h3>
+        <i class="review__spark" aria-hidden="true"></i>
+      </article>
+      <article class="review" data-speed="1.0" data-tilt="5">
+        <header><span class="review__av">L</span><span class="review__stars" aria-label="5 stars">&#9733;&#9733;&#9733;&#9733;&#9733;</span></header>
+        <p>&ldquo;Our family&rsquo;s new Friday spot. The kids love the chips, we love everything else.&rdquo;</p>
+        <h3>Lerato D.</h3>
+        <i class="review__spark" aria-hidden="true"></i>
+      </article>
+      <article class="review" data-speed="1.3" data-tilt="-3">
+        <header><span class="review__av">A</span><span class="review__stars" aria-label="5 stars">&#9733;&#9733;&#9733;&#9733;&#9733;</span></header>
+        <p>&ldquo;Late-night cravings, sorted. The lamb chops are unreal and the vibe is always warm.&rdquo;</p>
+        <h3>Amir S.</h3>
+        <i class="review__spark" aria-hidden="true"></i>
+      </article>
+      <article class="review" data-speed="0.9" data-tilt="-5">
+        <header><span class="review__av">C</span><span class="review__stars" aria-label="5 stars">&#9733;&#9733;&#9733;&#9733;&#9733;</span></header>
+        <p>&ldquo;Booked for a birthday, left with a new favourite restaurant.&rdquo;</p>
+        <h3>Chloe V.</h3>
+        <i class="review__spark" aria-hidden="true"></i>
+      </article>
+      <article class="review" data-speed="1.15" data-tilt="4">
+        <header><span class="review__av">S</span><span class="review__stars" aria-label="5 stars">&#9733;&#9733;&#9733;&#9733;&#9733;</span></header>
+        <p>&ldquo;Masala Bhai does not play about flavour. Every plate comes out loaded.&rdquo;</p>
+        <h3>Sipho N.</h3>
+        <i class="review__spark" aria-hidden="true"></i>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     OCCASIONS — a statement that fills in, then a drifting row
+     ============================================================ -->
+<section class="panel occasions" id="occasions">
+  <p class="label label--center"><i></i>Around our tables</p>
+  <h2 class="statement" data-fill>Birthdays, family feasts, late-night cravings. Whatever the reason, we&rsquo;ll set the table.</h2>
+
+  <div class="rail" id="rail">
+    <div class="rail__track">
+      <article class="occ">
+        <p class="occ__tag">Occasion</p>
+        <div class="occ__img"><img src="assets/tables-feast.webp" alt="" loading="lazy"></div>
+        <h3>Family Feasts</h3>
+        <p>Push the tables together. Platters in the middle, everyone reaching.</p>
+      </article>
+      <article class="occ">
+        <p class="occ__tag">Occasion</p>
+        <div class="occ__img"><img src="assets/tables-birthday.webp" alt="" loading="lazy"></div>
+        <h3>Birthday Dinners</h3>
+        <p>Tell us when you book, and we&rsquo;ll make a thing of it.</p>
+      </article>
+      <article class="occ">
+        <p class="occ__tag">Occasion</p>
+        <div class="occ__img"><img src="assets/tables-late.webp" alt="" loading="lazy"></div>
+        <h3>Late-Night Cravings</h3>
+        <p>When only a biryani will do.</p>
+      </article>
+      <article class="occ">
+        <p class="occ__tag">Occasion</p>
+        <div class="occ__img"><img src="assets/tables-friends.webp" alt="" loading="lazy"></div>
+        <h3>Random Catch-Ups</h3>
+        <p>One plate of chops turns into three hours.</p>
+      </article>
+      <article class="occ">
+        <p class="occ__tag">Occasion</p>
+        <div class="occ__img occ__img--food"><img src="assets/food-top.webp" alt="" loading="lazy"></div>
+        <h3>Takeaway</h3>
+        <p>Every dish on the menu travels. Take the table home.</p>
+      </article>
+      <article class="occ">
+        <p class="occ__tag">Occasion</p>
+        <div class="occ__img"><img src="assets/tables-room.webp" alt="" loading="lazy"></div>
+        <h3>Group Bookings</h3>
+        <p>Teams, clubs, the whole cousins group chat. Bring them all.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     VISIT — a route drawn between the two tables
+     PLACEHOLDER: add street addresses and a real booking link.
+     ============================================================ -->
+<section class="panel visit" id="visit">
+  <div class="visit__copy">
+    <p class="label"><i></i>Find us</p>
+    <h2 class="visit__line">Rosebank heat, Cape Town soul,</h2>
+    <p class="visit__line visit__line--track" data-track>Flavour first, every time.</p>
+    <p class="visit__sub">Two tables, one kitchen attitude. Walk in, or book ahead for the weekend.</p>
+    <!-- <a class="btn btn--solid" href="#visit">Book a Table <span aria-hidden="true">&rarr;</span></a> -->
+  </div>
+
+  <div class="map" id="map">
+    <svg class="map__svg" viewBox="0 0 600 520" aria-hidden="true">
+      <path class="map__route-bg" d="M470 90 C 380 150, 520 250, 400 300 S 180 280, 210 360 S 150 460, 110 440"/>
+      <path class="map__route" id="route" d="M470 90 C 380 150, 520 250, 400 300 S 180 280, 210 360 S 150 460, 110 440"/>
+    </svg>
+    <div class="pin pin--jhb" id="pinJhb">
+      <span class="pin__dot"></span>
+      <div class="pin__card">
+        <p class="pin__city">Rosebank</p>
+        <p class="pin__area">Johannesburg, Gauteng</p>
+        <a href="https://www.google.com/maps/search/?api=1&amp;query=MY+Diners+Rosebank" target="_blank" rel="noopener">open in maps &rarr;</a>
+      </div>
+    </div>
+    <div class="pin pin--cpt" id="pinCpt">
+      <span class="pin__dot"></span>
+      <div class="pin__card">
+        <p class="pin__city">Cape Town</p>
+        <p class="pin__area">Western Cape</p>
+        <a href="https://www.google.com/maps/search/?api=1&amp;query=MY+Diners+Cape+Town" target="_blank" rel="noopener">open in maps &rarr;</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     FAQ — on pink
+     PLACEHOLDER: check every answer against how the restaurants
+     actually run before launch.
+     ============================================================ -->
+<section class="panel panel--pink faq" id="faq">
+  <p class="label label--center"><i></i>FAQs</p>
+  <h2 class="statement" data-words>Everything you&rsquo;re wondering, answered before your first bite.</h2>
+
+  <div class="faq__list">
+    <details class="qa">
+      <summary>Do I need to book?<i></i></summary>
+      <div class="qa__a"><p>Walk-ins are welcome, but weekend nights fill up fast. Booking ahead keeps your table.</p></div>
+    </details>
+    <details class="qa">
+      <summary>Can you take a big group?<i></i></summary>
+      <div class="qa__a"><p>Yes. Tell us how many are coming and we&rsquo;ll put the tables together.</p></div>
+    </details>
+    <details class="qa">
+      <summary>Can I get it as takeaway?<i></i></summary>
+      <div class="qa__a"><p>Everything on the menu travels. Order at the counter or call ahead.</p></div>
+    </details>
+    <details class="qa">
+      <summary>Is there anything for vegetarians?<i></i></summary>
+      <div class="qa__a"><p>Plenty: paneer makhani, dhal tadka, veg biryani and all the sides.</p></div>
+    </details>
+    <details class="qa">
+      <summary>Do you do birthdays?<i></i></summary>
+      <div class="qa__a"><p>Birthdays are our favourite. Mention it when you book and leave the rest to us.</p></div>
+    </details>
+    <details class="qa">
+      <summary>Will I stay longer than planned?<i></i></summary>
+      <div class="qa__a"><p>Almost certainly. Nobody leaves after just one naan.</p></div>
+    </details>
+  </div>
+</section>
+
+</main>
+
+<!-- ============================================================
+     FOOTER
+     PLACEHOLDER: point the social links at the real accounts.
+     ============================================================ -->
+<footer class="foot" id="contact">
+  <div class="slats" aria-hidden="true"></div>
+
+  <div class="foot__cta">
+    <p class="label"><i></i>Your table&rsquo;s waiting</p>
+    <a class="foot__book" href="#visit">Book a Table <span aria-hidden="true">&rarr;</span></a>
+  </div>
+
+  <div class="foot__cols">
+    <div class="foot__col">
+      <p class="foot__head">Visit</p>
+      <a href="https://www.google.com/maps/search/?api=1&amp;query=MY+Diners+Rosebank" target="_blank" rel="noopener">Rosebank, Johannesburg</a>
+      <a href="https://www.google.com/maps/search/?api=1&amp;query=MY+Diners+Cape+Town" target="_blank" rel="noopener">Cape Town, Western Cape</a>
+      <p class="foot__time">Kitchen time <b id="footClock">--:--</b></p>
+    </div>
+    <nav class="foot__col" aria-label="Footer">
+      <p class="foot__head">Explore</p>
+      <a href="#about">About</a>
+      <a href="#specials">Specials</a>
+      <a href="#menu">Menu</a>
+      <a href="#reviews">Reviews</a>
+    </nav>
+    <div class="foot__col">
+      <p class="foot__head">Say hello</p>
+      <!-- PLACEHOLDER: point these at the real accounts -->
+      <div class="foot__social">
+        <a href="#" aria-label="Instagram"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1.2" class="fill"/></svg></a>
+        <a href="#" aria-label="TikTok"><svg viewBox="0 0 24 24"><path d="M14 3v11.5a3.5 3.5 0 1 1-3.5-3.5M14 3c.5 2.6 2.4 4.4 5 4.6"/></svg></a>
+        <a href="#" aria-label="Facebook"><svg viewBox="0 0 24 24"><path d="M14.5 21v-8h2.7l.4-3.2h-3.1V7.9c0-.9.3-1.6 1.6-1.6h1.7V3.5c-.3 0-1.3-.1-2.5-.1-2.5 0-4.1 1.5-4.1 4.2v2.2H8.4V13h2.8v8"/></svg></a>
+      </div>
+      <p class="foot__small">Tag us in your plates and we&rsquo;ll reshare the best ones.</p>
+    </div>
+  </div>
+
+  <!-- the sign-off: Masala Bhai rises from behind the words as you arrive -->
+  <div class="foot__sign" id="footSign">
+    <img class="foot__bhai" id="footBhai" src="assets/bhai.webp" alt="" aria-hidden="true" loading="lazy">
+    <p class="foot__word" aria-label="Come hungry">Come Hungry</p>
+  </div>
+
+  <div class="foot__base">
+    <p>&copy; <span id="year">2026</span> MY Diners &middot; Flavour First</p>
+    <p><a href="#">Terms</a> <span>|</span> <a href="#">Privacy Policy</a></p>
+    <a class="foot__top" href="#top">Back to top <span aria-hidden="true">&uarr;</span></a>
+  </div>
+</footer>
+
+<script src="js/loader.js"></script>
+<script src="js/hero.js"></script>
+<script src="js/ambience.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js"></script>
-<script type="importmap">
-{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }
-</script>
-<script type="module" src="js/scene.js"></script>
+<script src="js/main.js"></script>
 </body>
 </html>
